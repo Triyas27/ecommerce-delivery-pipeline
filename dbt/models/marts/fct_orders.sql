@@ -16,6 +16,10 @@ payments as (
     select * from {{ ref('int_order_payments_agg') }}
 ),
 
+distance as (
+    select * from {{ ref('int_order_distance') }}
+),
+
 labeled as (
     select
         order_id,
@@ -56,9 +60,12 @@ select
     payments.payment_count,
     payments.total_payment_value,
     payments.max_installments,
-    payments.primary_payment_type
+    payments.primary_payment_type,
+
+    distance.customer_seller_distance_km
 
 from labeled
 left join customers on labeled.customer_id = customers.customer_id
 left join items on labeled.order_id = items.order_id
 left join payments on labeled.order_id = payments.order_id
+left join distance on labeled.order_id = distance.order_id
