@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: One row per delivered order with the late-delivery label and order-time features. Population is restricted to orders with status = 'delivered' and a non-null delivered_at.
+    columns:
+      - name: order_id
+        data_tests:
+          - unique
+          - not_null
+
+      - name: is_late
+        description: True if delivered_at is after estimated_delivery_at. Must never be null - a null here means the delivered_at is_not_null filter upstream has regressed.
+        data_tests:
+          - not_null
