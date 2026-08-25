@@ -2,6 +2,7 @@ import duckdb
 import mlflow
 import mlflow.sklearn
 import pandas as pd
+from mlflow import MlflowClient
 from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -17,6 +18,8 @@ from sklearn.preprocessing import OneHotEncoder
 
 DB_PATH = "data/olist.duckdb"
 SPLIT_DATE = "2018-06-01"
+MODEL_NAME = "olist_late_delivery_classifier"
+CHAMPION_ALIAS = "champion"
 
 NUMERIC_FEATURES = [
     "promised_days",
@@ -75,6 +78,7 @@ def evaluate(y_true, y_pred, y_proba) -> dict:
 
 
 def main():
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("olist-late-delivery")
 
     df = load_data()
@@ -99,7 +103,7 @@ def main():
         print("baseline:", metrics)
 
     # real model: random forest with class weighting for the imbalance
-    with mlflow.start_run(run_name="random_forest_balanced"):
+    with mlflow.start_run(run_name="random_forest_balanced") as run:
         params = {
             "n_estimators": 300,
             "max_depth": 8,
@@ -120,6 +124,11 @@ def main():
         mlflow.log_metrics(metrics)
         mlflow.sklearn.log_model(model, "model")
         print("random_forest_balanced:", metrics)
+
+        model_uri = f"runs:/{run.info.run_id}/model"
+        registered = mlflow.register_model(model_uri, MODEL_NAME)
+        MlflowClient().set_registered_model_alias(MODEL_NAME, CHAMPION_ALIAS, registered.version)
+        print(f"registered {MODEL_NAME} v{registered.version} as @{CHAMPION_ALIAS}")
 
 
 if __name__ == "__main__":
