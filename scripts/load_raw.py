@@ -1,8 +1,10 @@
-import duckdb
+import argparse
 from pathlib import Path
 
-RAW_DIR = Path("data/raw")
-DB_PATH = Path("data/olist.duckdb")
+import duckdb
+
+DEFAULT_RAW_DIR = Path("data/raw")
+DEFAULT_DB_PATH = Path("data/olist.duckdb")
 
 
 def table_name_for(csv_path: Path) -> str:
@@ -12,9 +14,14 @@ def table_name_for(csv_path: Path) -> str:
 
 
 def main():
-    con = duckdb.connect(str(DB_PATH))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--raw-dir", type=Path, default=DEFAULT_RAW_DIR)
+    parser.add_argument("--db-path", type=Path, default=DEFAULT_DB_PATH)
+    args = parser.parse_args()
 
-    for csv_path in sorted(RAW_DIR.glob("*.csv")):
+    con = duckdb.connect(str(args.db_path))
+
+    for csv_path in sorted(args.raw_dir.glob("*.csv")):
         table = table_name_for(csv_path)
         con.execute(f"""
             CREATE OR REPLACE TABLE {table} AS
