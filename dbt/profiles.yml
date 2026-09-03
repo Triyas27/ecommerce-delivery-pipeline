@@ -4,4 +4,4 @@ olist_pipeline:
     dev:
       type: duckdb
       path: "{{ env_var('DBT_DUCKDB_PATH', '../data/olist.duckdb') }}"
-      threads: 4
+      threads: 1
