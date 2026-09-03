@@ -31,6 +31,7 @@ Work in progress. See `PROGRESS.md` (coming soon) for current stage.
    ```
    (Training locally with `python ml/train.py` works fine for experimentation/MLflow UI browsing, but the resulting `mlflow.db` won't be readable from inside the API container - see note below.)
 6. Start the API: `docker compose up -d`, then check `http://localhost:8000/docs`
+7. Generate a data drift report: `.venv/Scripts/pip install -r requirements-dev.txt` then `.venv/Scripts/python -m ml.monitor` (must run as `-m ml.monitor`, not `python ml/monitor.py` - the latter puts `ml/` itself on `sys.path` instead of the project root, breaking `from ml.train import ...`). Output goes to `reports/data_drift_report.html` (gitignored - regenerate locally, don't commit it, it's ~4.5MB).
 
 ### Why training happens inside Docker
 
